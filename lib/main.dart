@@ -3,6 +3,7 @@ import 'package:flutter_map/widgets/dropdown.dart';
 import 'package:flutter_map/widgets/input.dart';
 import 'package:flutter_map/widgets/konversi.dart';
 import 'package:flutter_map/widgets/result.dart';
+import 'package:flutter_map/widgets/history.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,36 +17,37 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  double _inputUser = 0;
-  double _result = 0;
-  String _selectedDropdown = "Pilih Suhu";
-  final _listSatuanSuhu = ["kelvin", "reamur"];
-  final List<String> _listHasil = [];
-  TextEditingController etInput = TextEditingController();
+  final inputController = TextEditingController();
 
-  _onChangedDropdown(String value) {
+  double _inputUser = 0;
+  String _selectedDropdown = "Kelvin";
+  double _result = 0;
+
+  List listHasil = [];
+  var listSatuanSuhu = ["Kelvin", "Reamur", "Fahrenheit", "Celcius"];
+
+  onChangedDropdown(newValue) {
     setState(() {
-      _selectedDropdown = value;
+      _selectedDropdown = newValue;
+      perhitunganSuhu();
     });
   }
 
-  _convertHandler() {
+  perhitunganSuhu() {
     setState(() {
-      if (etInput.text.isNotEmpty) {
-        _inputUser = double.parse(etInput.text);
-        switch (_selectedDropdown) {
-          case "kelvin":
-            _result = _inputUser + 273;
-            _listHasil.add("Konversi dari: $_inputUser ke $_result  kelvin");
-            break;
-          case "reamur":
-            _result = _inputUser * 4 / 5;
-            _listHasil.add("Konversi dari: $_inputUser ke $_result  reamur");
-            break;
-          default:
-            _listHasil.add("Suhu belum dipilih");
-            break;
-        }
+      _inputUser = double.parse(inputController.text);
+      if (_selectedDropdown == "Kelvin") {
+        _result = _inputUser + 273;
+        listHasil.add('Kelvin : $_result');
+      } else if (_selectedDropdown == "Reamur") {
+        _result = (4 / 5) * _inputUser;
+        listHasil.add('Reamur : $_result');
+      } else if (_selectedDropdown == "Fahrenheit") {
+        _result = (9 / 5) * _inputUser + 32;
+        listHasil.add('Fahrenheit : $_result');
+      } else {
+        _result = _inputUser;
+        listHasil.add('Celcius : $_result');
       }
     });
   }
@@ -54,40 +56,45 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Konversi Suhu Rositaayu - 2031710152',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Konverter Suhu Rositaayu - 2031710152"),
+        debugShowCheckedModeBanner: false,
+        title: 'Konversi Suhu',
+        theme: ThemeData(
+          primarySwatch: Colors.orange,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        body: Container(
-          margin: const EdgeInsets.all(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Input(etInput: etInput),
-              Dropdown(
-                  selectedDropdown: _selectedDropdown,
-                  listSatuanSuhu: _listSatuanSuhu,
-                  onChangedDropdown: _onChangedDropdown),
-              Konversi(convertHandler: _convertHandler),
-              Result(listHasil: _listHasil),
-            ],
+        home: Scaffold(
+          appBar: AppBar(
+            title: const Text("Konversi Suhu"),
           ),
-        ),
-      ),
-    );
+          body: Container(
+            padding: const EdgeInsets.only(top: 30),
+            child: Column(children: [
+              const Text('Rosita Ayu Tri Lestari - 2031710152',),
+              Input(inputController: inputController),
+              const SizedBox(
+                height: 10,
+              ),
+              Dropdown(
+                  listItem: listSatuanSuhu,
+                  selectedDropdown: _selectedDropdown,
+                  onDropdownChange: onChangedDropdown),
+              Result(result: _result),
+              Konversi(konvertHandler: perhitunganSuhu),
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                width: double.infinity,
+                height: 1,
+                color: Colors.grey,
+              ),
+              const Text(
+                '\nRiwayat Konversi\n',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              Expanded(child: History(listHasil: listHasil))
+            ]),
+          ),
+        ));
   }
 }
